@@ -24,16 +24,29 @@
     let tasks = ['Flur', 'Bad', 'Küche', 'Müll A (Glas)', 'Müll B (Papier)', 'Müll C (Rest)'];
 
     // Erstellen Sie ein leeres Objekt für den Putzplan
-    let cleaningPlan = {};
+    let cleaningPlan = JSON.parse(localStorage.getItem('cleaningPlan')) || {};
 
     // Füllen Sie den Putzplan
     for (let week = 2; week <= 52; week++) {
-        cleaningPlan[`KW ${week}`] = {};
-        for (let i = 0; i < tasks.length; i++) {
-            cleaningPlan[`KW ${week}`][tasks[i]] = {
-                person: people[i % people.length],
-                completed: false
-            };
+        if (!cleaningPlan[`KW ${week}`]) {
+            cleaningPlan[`KW ${week}`] = {};
+            for (let i = 0; i < tasks.length; i++) {
+                cleaningPlan[`KW ${week}`][tasks[i]] = {
+                    person: people[i % people.length],
+                    completed: false
+                };
+            }
+        }
+    }
+
+    // Funktion zum Markieren einer Aufgabe als erledigt
+    function markTaskAsDone(week, task) {
+        if (cleaningPlan[week] && cleaningPlan[week][task]) {
+            cleaningPlan[week][task].completed = !cleaningPlan[week][task].completed;
+            // Speichern Sie den aktualisierten Putzplan in LocalStorage
+            localStorage.setItem('cleaningPlan', JSON.stringify(cleaningPlan));
+        } else {
+            console.log('Ungültige Woche oder Aufgabe');
         }
     }
 
@@ -69,7 +82,7 @@
                 let button = document.createElement('button');
                 button.textContent = cleaningPlan[week][task].completed ? 'Erledigt' : 'Nicht erledigt';
                 button.onclick = function() {
-                    cleaningPlan[week][task].completed = !cleaningPlan[week][task].completed;
+                    markTaskAsDone(week, task);
                     button.textContent = cleaningPlan[week][task].completed ? 'Erledigt' : 'Nicht erledigt';
                 };
                 td.appendChild(button);
